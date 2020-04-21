@@ -7,9 +7,10 @@ title: Hole
 subtitle: ''
 description: ''
 keywords: Linux Network I/O
-author: Zhao Yujiu
-language: en
-timezone: ''
+author: zyj
+email: yujiuzhao@gmail.com
+language: zh-CN
+timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'

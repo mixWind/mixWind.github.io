@@ -1,0 +1,74 @@
+#! /bin/bash
+
+prefix=`date "+%Y-%m-%d-"`
+post_dir="source/_posts"
+image_dir="source/post_images"
+dust_dir=".dust"
+
+function help()
+{
+cat << EOF
+-n "title"  -- create a new post name after YY-MM-DD-title.md
+-i 	    -- create a dir for images
+-d "title"  -- delete a post, fullname is requested.
+-h          -- help
+EOF
+}
+
+function isdup()
+{
+	target=$1
+	files=`ls $post_dir`
+
+	for file in $files
+	do
+		short=${file%.md}
+		short=${short##*-}
+		if [ $short == $target ]; then
+			echo "Warn: Post $target is already exited."
+			return 1
+		fi
+	done
+}
+
+
+while getopts "n:id:r:h" arg
+do
+	case $arg in
+		n)	
+			title=$OPTARG
+			postname=${prefix}${title}
+			isdup $title		
+			if [ $? == 0 ]; then
+				hexo new $title
+				mv source/_posts/${title}.md source/_posts/${postname}.md
+			fi
+			;;
+		i)
+			echo mkdir for images $postname
+			mkdir source/post_images/$postname
+			;;
+		d)
+			# echo delete $OPTARG
+			short=${OPTARG%.md}
+			mv $post_dir/${short}.md $dust_dir 
+			mv $image_dir/${short} $dust_dir
+			echo "$short* have been moved into .dust"	
+			;;
+		r)
+			## resore
+			short=${OPTARG%.md}
+			mv $dust_dir/${short}.md  $post_dir
+			mv $dust_dir/${short}  $image_dir
+			echo "$short* have been restored"	
+			;;
+
+		h)
+			help
+			;;
+		?)
+			echo "Unknow argument $arg"
+			help
+			;;
+	esac
+done
