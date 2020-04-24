@@ -31,12 +31,18 @@ function isdup()
 	done
 }
 
+function underline2hyphen()
+{
+	echo $1 | tr '_' '-' 
+}
+
 
 while getopts "n:id:r:h" arg
 do
 	case $arg in
 		n)	
 			title=$OPTARG
+			title=`underline2hyphen $title`
 			postname=${prefix}${title}
 			isdup $title		
 			if [ $? == 0 ]; then
