@@ -47,7 +47,7 @@ do
 			isdup $title		
 			if [ $? == 0 ]; then
 				hexo new $title
-				mv source/_posts/${title}.md source/_posts/${postname}.md
+			#	mv source/_posts/${title}.md source/_posts/${postname}.md
 			fi
 			;;
 		i)
