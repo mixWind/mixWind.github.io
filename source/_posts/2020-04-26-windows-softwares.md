@@ -123,29 +123,31 @@ Chrome 和 Firefox 都有所谓的国内版，请远离他们，去真正的官�
 
 用 Chrome 当然是为了用插件啦，列一下我常用的：
 
-### SwithyOmega
+### [SwithyOmega](https://chrome.google.com/webstore/detail/proxy-switchyomega/padekgcemlokbadohgkifijomclgjgif)
 
 自动切换科学上网，标配了吧。
 
-### Adblock Plus
+### [Adblock Plus](https://chrome.google.com/webstore/detail/adblock-plus-free-ad-bloc/cfhdojbkjhnklbpkdaibdccddilifddb)
 
 去广告
 
-### The Great Suspender
+### [The Great Suspender](https://chrome.google.com/webstore/detail/the-great-suspender/klbibkeccnjlkjkiokjodocebajanakg)
 
 Chrome 可是吃内存大户，而我动不动会打开二三十个网页，这个插件会冻结那些非活动的页面，节省内存。
 
-然而虚拟机才是条不归路，都是泪。
+### [OneTab](https://chrome.google.com/webstore/detail/onetab/chphlpgkkbolifaimnlloiipkdnihall)
 
-### crxMouse Chrome
+把网页都收集到一个页面列出，也是省内存的利器。此外充当一个临时书签。
+
+### [crxMouse Chrome](https://chrome.google.com/webstore/detail/crxmouse-chrome-gestures/jlgkpaicikihijadgifklkbpdajbkhjo)
 
 鼠标手势，这个才是我真正常用的鼠标手势。
 
-### Tampermonkey
+### [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
 
 油猴大名不用说了吧，脚本就不列了。
 
-### WasteNoTime
+### [WasteNoTime](https://chrome.google.com/webstore/detail/wastenotime/enebomhlllfaccbelnjhfgblnalofhch)
 
 统计花在各个网站的时间。Waste no time，对自己要诚实哦。
 
