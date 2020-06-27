@@ -11,7 +11,7 @@
    
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>
-    tags |  Hole
+    bash：你真的了解这两个尖尖的东西吗 |  Hole
   </title>
   <meta name="generator" content="hexo-theme-ayer">
   
@@ -43,13 +43,278 @@
   <div id="app">
     <main class="content on">
       <section class="outer">
+  <article id="post-linux-shell-redirections" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  bash：你真的了解这两个尖尖的东西吗
+</h1>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/06/23/linux-shell-redirections/" class="article-date">
+  <time datetime="2020-06-23T03:48:41.000Z" itemprop="datePublished">2020-06-23</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/shell/">shell</a>
+  </div>
+
+      
+      
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">706</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">3 分钟</span>
+        </span>
+    </span>
+</div>
+
+      
+    </div>
+    
+
+    
+    
+
+
+
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>先来看一个问题。<br>假设有一个文件<code>echo 111 &gt; test</code>，那么：</p>
+<ul>
+<li><code>cat &lt;test &gt;test</code> 的输出是什么？</li>
+</ul>
+<p>运行一下看看结果和你想的是否一样。如果你明确的知道为什么，那么就不必再看了。</p>
+<a id="more"></a>
+
+<p>很神奇是不是，读出来竟然是空的，不止输出是空，连文件本身都被清空了。</p>
+<p>那么这到底是为什么呢？</p>
+<p>作为一个硬核博客我们自然是要追本溯源的，跟我来吧~</p>
+<p><code>strace</code> 是深挖细节的不二之选。但是 strace 直接抓上面的命令，shell 会把重定向符归属到 strace 命令本身，所以我们需要利用一点 strace 的小技巧：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">strace -fp pid</span><br></pre></td></tr></table></figure>
+<p>来跟踪一个进程。-p 选项指定进程，-f 选项跟踪子进程。</p>
+<p>具体操作就是</p>
+<ul>
+<li>打开两个 shell，我们分别记作 A, B。</li>
+<li>在 A 中 <code>echo $$</code> 获取 A 的 pid</li>
+<li>B 中运行 <code>strace -fp pid</code></li>
+<li>然后我们在 A 中运行测试命令，B 中观察 strace</li>
+</ul>
+<p>接下来就开始我们的探案之旅吧。</p>
+<p>A 中运行 <code>cat &lt;test &gt;test</code>，我们会发现 B 中出现巨量的打印，这里我把关键部分摘出来：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[pid 12326] open(&quot;test&quot;, O_RDONLY|O_LARGEFILE) &#x3D; 3</span><br><span class="line">[pid 12326] dup2(3, 0)                  &#x3D; 0</span><br><span class="line">[pid 12326] close(3)                    &#x3D; 0</span><br><span class="line">[pid 12326] open(&quot;test&quot;, O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) &#x3D; 3</span><br><span class="line">[pid 12326] dup2(3, 1)                  &#x3D; 1</span><br><span class="line">[pid 12326] close(3)                    &#x3D; 0</span><br><span class="line">[pid 12326] execve(&quot;&#x2F;bin&#x2F;cat&quot;, [&quot;cat&quot;], [&#x2F;* 28 vars *&#x2F;]) &#x3D; 0</span><br><span class="line">&#96;&#96;&#96; </span><br><span class="line">这一部分是在做什么呢，我来解读一下。</span><br><span class="line"></span><br><span class="line">### 重定向的原理</span><br><span class="line">首先我们知道每个进程的0、1、2号文件描述符分别对应 stdin, stdout, stderr，也就是标准输入、标准输出、标准错误。</span><br><span class="line"></span><br><span class="line">进程每打开一个文件都对应一个文件描述符(fd, file descriptor)，所谓**重定向**就是打开一个文件然后将标准输入&#x2F;输出的fd与之绑定。</span><br><span class="line"></span><br><span class="line">它的实现依赖的是系统调用dup2()来完成的，我们 &#96;man&#96; 一下 dup2</span><br></pre></td></tr></table></figure>
+<p>SYNOPSIS<br>       #include &lt;unistd.h&gt;</p>
+<pre><code>int dup(int fildes);
+int dup2(int fildes, int fildes2);</code></pre><p>DESCRIPTION<br>       The  dup()  function  provides an alternative interface to the service provided by fcntl() using the F_DUPFD command. The<br>       call dup(fildes) shall be equivalent to:</p>
+<pre><code>    fcntl(fildes, F_DUPFD, 0);
+
+The dup2() function shall cause the file descriptor fildes2 to refer to the same open file description as  the  file  de‐
+scriptor fildes and to share any locks, and shall return fildes2.  If fildes2 is already a valid open file descriptor, it
+shall be closed first, unless fildes is equal to fildes2 in which case dup2() shall return fildes2 without closing it. If
+the  close  operation  fails to close fildes2, dup2() shall return −1 without changing the open file description to which
+fildes2 refers. If fildes is not a valid file descriptor, dup2() shall return −1 and shall not close fildes2.  If fildes2
+is less than 0 or greater than or equal to {OPEN_MAX}, dup2() shall return −1 with errno set to [EBADF].</code></pre><pre><code>我们结合上面 strace 抓到的流程，
+
+
+
+
+
+
+
+
+
+
+
+
+
+- `cat &lt;test &gt;&gt;test`呢？
+
+</code></pre>
+      
+      <!-- reward -->
+      
+      <div id="reward-btn">
+        打赏
+      </div>
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+        <div class="declare">
+          <ul class="post-copyright">
+            <li>
+              <i class="ri-copyright-line"></i>
+              <strong>版权声明： </strong>
+              本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+            </li>
+          </ul>
+        </div>
+        
+    <footer class="article-footer">
+      
+          
+<div class="share-btn">
+      <span class="share-sns share-outer">
+        <i class="ri-share-forward-line"></i>
+        分享
+      </span>
+      <div class="share-wrap">
+        <i class="arrow"></i>
+        <div class="share-icons">
+          
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="ri-weibo-fill"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="ri-wechat-fill"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="ri-qq-fill"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="ri-douban-line"></i>
+          </a>
+          <!-- <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a> -->
+          
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="ri-facebook-circle-fill"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="ri-twitter-fill"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="ri-google-fill"></i>
+          </a>
+        </div>
+      </div>
+</div>
+
+<div class="wx-share-modal">
+    <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://yoursite.com/2020/06/23/linux-shell-redirections/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div id="share-mask"></div>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/shell/" rel="tag">shell</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
   
-    <h1 class="page-type-title">标签</h1>
-    <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gcc/" rel="tag">Gcc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RE/" rel="tag">RE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VM/" rel="tag">VM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/" rel="tag">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git-rebase/" rel="tag">git rebase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rsync/" rel="tag">rsync</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/" rel="tag">ssh</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/" rel="tag">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/" rel="tag">windows</a></li></ul>
   
+  <nav class="article-nav">
+    
+    
+      <a href="/2020/06/22/linux-re/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">Linux Regular Expression</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+  
+<!-- valine评论 -->
+<div id="vcomments-box">
+    <div id="vcomments">
+    </div>
+</div>
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        app_id: '',
+        app_key: '',
+        path: window.location.pathname,
+        notify: 'false',
+        verify: 'false',
+        avatar: 'monsterid',
+        placeholder: '给我的文章加点评论吧~',
+        recordIP: true
+    });
+    const infoEle = document.querySelector('#vcomments .info');
+    if (infoEle && infoEle.childNodes && infoEle.childNodes.length > 0) {
+        infoEle.childNodes.forEach(function (item) {
+            item.parentNode.removeChild(item);
+        });
+    }
+</script>
+<style>
+    #vcomments-box {
+        padding: 5px 30px;
+    }
+
+    @media screen and (max-width: 800px) {
+        #vcomments-box {
+            padding: 5px 0px;
+        }
+    }
+
+    #vcomments-box #vcomments {
+        background-color: #fff;
+    }
+
+    .v .vlist .vcard .vh {
+        padding-right: 20px;
+    }
+
+    .v .vlist .vcard {
+        padding-left: 10px;
+    }
+</style>
+
+  
+
+  
+  
+  
+  
+  
+
+</article>
 </section>
-
-
       <footer class="footer">
   <div class="outer">
     <ul>
@@ -196,6 +461,24 @@
 
 
 
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: 'main',
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto'
+  });
+</script>
 
 
 

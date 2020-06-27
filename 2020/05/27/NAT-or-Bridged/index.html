@@ -11,7 +11,7 @@
    
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>
-    tags |  Hole
+    Bridged or NAT 你也要网上冲浪吗? |  Hole
   </title>
   <meta name="generator" content="hexo-theme-ayer">
   
@@ -43,13 +43,263 @@
   <div id="app">
     <main class="content on">
       <section class="outer">
+  <article id="post-NAT-or-Bridged" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  Bridged or NAT 你也要网上冲浪吗?
+</h1>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/05/27/NAT-or-Bridged/" class="article-date">
+  <time datetime="2020-05-27T06:20:53.000Z" itemprop="datePublished">2020-05-27</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+  </div>
+
+      
+      
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">825</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">2 分钟</span>
+        </span>
+    </span>
+</div>
+
+      
+    </div>
+    
+
+    
+    
+    <div class="tocbot"></div>
+
+
+
+
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>最近公司加了审计网关，每个人限定 MAC ，登录上网。旁边的小伙伴虚拟机就断网了，这可愁坏了小伙子，还能不能愉快的<del>划水</del>玩耍啦？</p>
+<p>俗话说的好，摸鱼乃人生大事。</p>
+<p>救救孩子！</p>
+<p>那我们这种老油条自然要伸出援助之手。</p>
+<a id="more"></a>
+<p>这事是怎么回事呢，那就要从桥接和 NAT 两种模式说起。</p>
+<h3 id="Bridged-Networking-桥接网络"><a href="#Bridged-Networking-桥接网络" class="headerlink" title="Bridged Networking 桥接网络"></a>Bridged Networking 桥接网络</h3><p>简单来说就是通过物理机的网卡搭桥。这个桥搭到哪里呢？搭到物理机所在的网络，也就是说通过桥接的方式<br>虚拟机在物理机所在网络中实实在在占据了一个 IP。所以我们可以和这个网络中的所有设备通信。</p>
+<p>这种方式呢就好比我们完美的伪造了一套户口、身份证，这个世上从此多了一个人。</p>
+<h3 id="NAT-Network-Address-Translation-网络地址转换"><a href="#NAT-Network-Address-Translation-网络地址转换" class="headerlink" title="NAT(Network Address Translation) 网络地址转换"></a>NAT(Network Address Translation) 网络地址转换</h3><p>NAT 呢可以理解为一个代理人，我们的所有网络请求都以物理机的身份来提交,外界则感知不到虚拟机的存在。</p>
+<p>虚拟机分配到的 IP 呢则是不在物理机网络的网段。</p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>所以审计网关锁定 MAC，我们以桥接的方式上不了网，但是我们改用 NAT 的方式就可以暗戳戳的用物理机的身份上网了。</p>
+<p>当然光配置 NAT 还有一点不足。这种方式我们作为客户端的服务都可以使用了，但是虚拟机作为服务端的应用还是受限的。</p>
+<p>原因在于服务端的端口号是指定的。</p>
+<p>当我们作为客户端发起请求的时候，虚拟机的操作系统会分配一个随机的端口号，同时 NAT 服务也会在物理机上申请一个端口号，这时 NAT 服务就会把这两个端口号的对应关系记住，虚拟机就可以正常通信了。这个过程中物理机其实是完全感知不到这一切的，这些转换都是我们的虚拟机软件来做的。</p>
+<p>正因为物理机对这些东西是没有感知的，所以我们想 ssh 到虚拟机上时就有问题了，我们指定的是物理机的 IP, 22的端口号。<br>这在物理机看来就是：你小子想和我搞 SSH?  这时不管它答不答应都和虚拟机没关系了。</p>
+<p>那我们怎么解决这个问题呢？端口转发就是针对这个啦。</p>
+<p>所谓端口转发就是我们告诉 NAT 服务，把物理机的X端口和虚拟机的Y端口关联起来，那么凡是向X端口发起的数据都会转给虚拟机Y端口，Y发出的呢也会转给X。</p>
+<p>最后我们来看一下实操。VirtualBox:</p>
+<ol>
+<li>设置 NAT<br><img src="/post_images/2020-05-27-NAT-or-Bridged/vboxNetSetting.jpg" alt="NAT setting"></li>
+<li>配置端口转发<br><img src="/post_images/2020-05-27-NAT-or-Bridged/portForwarding.jpg" alt="port forwarding"><br>主机的 IP 也可以不填，像这里我们指定为 localhost 的话就只能通过这个 IP 访问，不指定的话则主机 DHCP 获取的 IP 和本地回环都是能用的。</li>
+</ol>
+<p>一般配个22端口的转发就够了。这里4000是为了方便摸鱼水blog，比如这篇:D</p>
+
+      
+      <!-- reward -->
+      
+      <div id="reward-btn">
+        打赏
+      </div>
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+        <div class="declare">
+          <ul class="post-copyright">
+            <li>
+              <i class="ri-copyright-line"></i>
+              <strong>版权声明： </strong>
+              本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+            </li>
+          </ul>
+        </div>
+        
+    <footer class="article-footer">
+      
+          
+<div class="share-btn">
+      <span class="share-sns share-outer">
+        <i class="ri-share-forward-line"></i>
+        分享
+      </span>
+      <div class="share-wrap">
+        <i class="arrow"></i>
+        <div class="share-icons">
+          
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="ri-weibo-fill"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="ri-wechat-fill"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="ri-qq-fill"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="ri-douban-line"></i>
+          </a>
+          <!-- <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a> -->
+          
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="ri-facebook-circle-fill"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="ri-twitter-fill"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="ri-google-fill"></i>
+          </a>
+        </div>
+      </div>
+</div>
+
+<div class="wx-share-modal">
+    <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://yoursite.com/2020/05/27/NAT-or-Bridged/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div id="share-mask"></div>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VM/" rel="tag">VM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/network/" rel="tag">network</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
   
-    <h1 class="page-type-title">标签</h1>
-    <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Gcc/" rel="tag">Gcc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RE/" rel="tag">RE</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VM/" rel="tag">VM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git/" rel="tag">git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/git-rebase/" rel="tag">git rebase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/network/" rel="tag">network</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rsync/" rel="tag">rsync</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/" rel="tag">ssh</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/" rel="tag">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/" rel="tag">windows</a></li></ul>
   
+  <nav class="article-nav">
+    
+      <a href="/2020/06/06/cwrsync/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            cwrsync
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2020/04/27/mobaxterm/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">MobaXterm 配置</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+  
+<!-- valine评论 -->
+<div id="vcomments-box">
+    <div id="vcomments">
+    </div>
+</div>
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
+<script>
+    new Valine({
+        el: '#vcomments',
+        app_id: '',
+        app_key: '',
+        path: window.location.pathname,
+        notify: 'false',
+        verify: 'false',
+        avatar: 'monsterid',
+        placeholder: '给我的文章加点评论吧~',
+        recordIP: true
+    });
+    const infoEle = document.querySelector('#vcomments .info');
+    if (infoEle && infoEle.childNodes && infoEle.childNodes.length > 0) {
+        infoEle.childNodes.forEach(function (item) {
+            item.parentNode.removeChild(item);
+        });
+    }
+</script>
+<style>
+    #vcomments-box {
+        padding: 5px 30px;
+    }
+
+    @media screen and (max-width: 800px) {
+        #vcomments-box {
+            padding: 5px 0px;
+        }
+    }
+
+    #vcomments-box #vcomments {
+        background-color: #fff;
+    }
+
+    .v .vlist .vcard .vh {
+        padding-right: 20px;
+    }
+
+    .v .vlist .vcard {
+        padding-left: 10px;
+    }
+</style>
+
+  
+
+  
+  
+  
+  
+  
+
+</article>
 </section>
-
-
       <footer class="footer">
   <div class="outer">
     <ul>
@@ -196,6 +446,24 @@
 
 
 
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: 'main',
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto'
+  });
+</script>
 
 
 

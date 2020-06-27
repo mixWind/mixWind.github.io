@@ -11,7 +11,7 @@
    
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>
-    about |  Hole
+    cwrsync |  Hole
   </title>
   <meta name="generator" content="hexo-theme-ayer">
   
@@ -43,7 +43,7 @@
   <div id="app">
     <main class="content on">
       <section class="outer">
-  <article id="page-" class="article article-type-page" itemscope
+  <article id="post-cwrsync" class="article article-type-post" itemscope
   itemprop="blogPost" data-scroll-reveal>
 
   <div class="article-inner">
@@ -51,7 +51,7 @@
     <header class="article-header">
        
 <h1 class="article-title sea-center" style="border-left:0" itemprop="name">
-  about
+  cwrsync
 </h1>
  
 
@@ -59,6 +59,47 @@
     
 
     
+    <div class="article-meta">
+      <a href="/2020/06/06/cwrsync/" class="article-date">
+  <time datetime="2020-06-06T14:55:30.000Z" itemprop="datePublished">2020-06-06</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+  </div>
+
+      
+      
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">1.6k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">6 分钟</span>
+        </span>
+    </span>
+</div>
+
+      
+    </div>
+    
+
+    
+    
+    <div class="tocbot"></div>
+
+
+
+
 
     
 
@@ -68,11 +109,59 @@
       
 
       
-      <ul>
-<li>Slow thinker</li>
-<li>Linux Kernel Developer focus on Network and I/O</li>
+      <p>最近在我的 windows 上配置了一下 rsync 远端备份我的服务器工作目录，毕竟没有备份的男人是没有安全感的。</p>
+<p>win 上的 rsync 软件我选择的是 <a href="https://itefix.net/cwrsync" target="_blank" rel="noopener">cwRsync</a>, 因为我的需求只要一个 rsync client 就够了所以选了他家的 free 版本。就是不带界面的免费版。正好反正使用场景是 win 开定时任务，命令行正合我心。</p>
+<p>cwRsync 在 win 上还是有不少坑，所以特此记录一下。当然本文的对象仅是 cwRsync，rsync 本身的一些坑就不在这里讨论了，但是我要吐槽一嘴 ￣へ￣ </p>
+<a id="more"></a>
+
+<p>我的版本是 cwrsync_5.5.0_x86_free </p>
+<p>下好后我们解压得到一个文件夹，然后给它选个风水宝地。我们先进去搂一眼：<br><img src="/post_images/2020-06-06-cwrsync/cwrsync_unzip.png" alt="unzip"></p>
+<p>这个 cwrsync.cmd 就是它的一个初始化配置，我们运行它就会在当前目录得到一个 home 文件夹，里面按我们的用户名创建了 ssh 文件夹。</p>
+<p>然后我们看看它的 bin 目录：<br><img src="/post_images/2020-06-06-cwrsync/cwrsync_bin.png" alt="bin"></p>
+<p>哈哈眼熟吧，他就是把需要的 cygwin 文件打了个包，你也能自己做一个 win 版的 rsync 了。然后有三个工具：</p>
+<ul>
+<li>rsync</li>
+<li>ssh</li>
+<li>ssh-keygen</li>
 </ul>
-<p>Email: <a href="mailto:yujiuzhao@gmail.com">yujiuzhao@gmail.com</a></p>
+<p>正好这三样我都会用到。我的环境是开发在服务器上开 docker，windows 远程，所以基本上工作数据都是在服务器上的，我们把它备份一份到本地。当然我们这个备份方案是很简单的，只是一个每天闲时的增量备份。</p>
+<p>rsync 支持两种方式的传输。一种是通过 <strong>ssh</strong> 协议，一种是 <strong>rsync daemon</strong>。后一种需要在服务器段运行一个常驻后台的 rsync server，而我用的 docker 只有 ssh 的端口配置了转发，所以选项只能是ssh。故而我需要运用到它这里的 ssh 和 ssh-keygen。主要的坑也在这里。</p>
+<h3 id="添加环境变量"><a href="#添加环境变量" class="headerlink" title="添加环境变量"></a>添加环境变量</h3><p>俺的需求是定时脚本执行备份，所以把 bin 目录添加到环境变量中会方便点。</p>
+<p>由于我用的 mobaxterm 带有 ssh 命令，windows 也有一个 ssh, 怕混淆所以我把 bin 目录下的 ssh 原地拷贝了一份改名 rsh。</p>
+<h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3><p>配置完环境变量我们就可以基本使用 rsync 了，这里我给个示例。</p>
+<p>假设我的</p>
+<ul>
+<li>服务器 ip 是 10.10.1.10</li>
+<li>docker 的 22 端口映射到服务器的 22002</li>
+</ul>
+<p>那么我们最简单一个命令可以这么构建：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">rsync -avn -e &quot;ssh -l root -p 22002&quot; 10.10.1.10:&#x2F;home&#x2F;zyj&#x2F;test &#x2F;cygdrive&#x2F;d&#x2F;Docker-bk</span><br><span class="line"></span><br><span class="line"># -n 参数是只打印要备份的文件而不实际执行操作，可以方便我们调试</span><br><span class="line"># -e 的作用是指定一个 ssh 程序</span><br><span class="line"># 10.10.1.10:&#x2F;home&#x2F;zyj&#x2F;test 要备份的目录</span><br><span class="line"># &#x2F;cygdrive&#x2F;d&#x2F;Docker-bk win上的备份目录</span><br></pre></td></tr></table></figure>
+<p>由于docker ssh 端口是被映射过的，所以我们需要借助 -e 来指定 ssh 命令的一些参数，可以类比 <code>alias</code> 起别名就很好理解了。</p>
+<p>最后的 /cygdrive ，我们通过 cygwin 来运行 rsync，这个目录就是 cygwin 虚拟出来方便程序访问 windos 的路径。可以把这个目录当作某种意义的根。</p>
+<h3 id="添加-ssh-key"><a href="#添加-ssh-key" class="headerlink" title="添加 ssh key"></a>添加 ssh key</h3><p>我们需要的是定时脚本执行备份，所以ssh密码是个问题，cwrsync可不会记住密码。我选择在 docker 添加公钥来免密登录。</p>
+<p>这里执行 ssh-keygen.exe ，我们简单点默认就好，这里默认的存放路径就是之前 cwrsync.cmd 创建的目录。最终我们会在cwRsync_5.5.0_x86_Free\home\z.ssh 下得到一份公钥和私钥。把公钥添加到 docker 的 ssh 配置即可。</p>
+<p>如果服务器之前没有配置过公钥，可能还需要设置一下，google 解君愁。</p>
+<h3 id="ssh-权限问题"><a href="#ssh-权限问题" class="headerlink" title="ssh 权限问题"></a>ssh 权限问题</h3><p>最大的坑就在这里了，我们使用私钥的话，ssh 要求我们的私钥文件的权限不能太open也就是希望我们的私钥文件是 600 的权限。cygwin 这里确实挺混乱的，我先是在 wndowns 中把文件设为只读不行，然后我又用 mobaxterm 的 cygwin 环境用bash 写入 600 的权限，但是 ssh 还是不认。最终 statckoverflow 上的<a href="https://stackoverflow.com/questions/26186429/cwrsync-permissions-on-private-key" target="_blank" rel="noopener">这个答案</a>救了我。注意是评论区哈，那个回答是无效的。</p>
+<blockquote>
+<p>I fixed it by selecting the .ssh folder, disabling inherited permissions from parent and setting “Full Control” to my own account. Then cwrsync worked! – Stéphane Gourichon Jan 7 ‘18 at 23:46</p>
+</blockquote>
+<p>当然他们写的很简略，我这里贴一下具体过程，算是个补充把。</p>
+<p>1.进入 <code>.ssh</code> 文件夹，右键私钥文件-&gt;属性-&gt;安全-&gt;高级<br><img src="/post_images/2020-06-06-cwrsync/private-key-%E7%A6%81%E7%94%A8%E7%BB%A7%E6%89%BF.jpg" alt="permissions"></p>
+<p>2.点击“禁用继承”清除所有权限<br><img src="/post_images/2020-06-06-cwrsync/%E7%A6%81%E7%94%A8%E7%BB%A7%E6%89%BF.jpg" alt="remove all inherited permissions"><br>完成后如下图, 点确认退出<br><img src="/post_images/2020-06-06-cwrsync/%E7%A6%81%E7%94%A8%E7%BB%A7%E6%89%BF%E5%AE%8C%E6%88%90.jpg" alt="removed"></p>
+<p>3.在权限列表里添加自己的账户和权限<br><img src="/post_images/2020-06-06-cwrsync/%E6%B7%BB%E5%8A%A0%E8%87%AA%E5%B7%B1%E7%9A%84%E8%B4%A6%E5%8F%B7.jpg" alt="add user"><br><img src="/post_images/2020-06-06-cwrsync/%E6%B7%BB%E5%8A%A0%E5%AE%8C%E5%85%A8%E6%9D%83%E9%99%90.jpg" alt="set full control"></p>
+<p>4.搞定收工</p>
+<p>现在我们的测试命令可以这么写了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avn -e &quot;ssh -p 22010 -l root -i &#x2F;home&#x2F;z&#x2F;.ssh&#x2F;id_rsa&quot; 10.10.1.10:&#x2F;home&#x2F;zyj&#x2F;test &#x2F;cygdrive&#x2F;d&#x2F;Docker-bk</span><br></pre></td></tr></table></figure>
+
+<h3 id="设置定时任务"><a href="#设置定时任务" class="headerlink" title="设置定时任务"></a>设置定时任务</h3><p>确定我们的基础设施都准备好了就可以来搞一个脚本作为我们的定时任务载体了。脚本的内容是什么呢？就是我们上面测试命令的扩充。</p>
+<p>我是这么写的，供君参考：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -av --progress --delete --exclude-from &#x2F;cygdrive&#x2F;d&#x2F;cwRsync_5.5.0_x86_Free&#x2F;bin&#x2F;exclude  -e &quot;ssh -p 22010 -l root -i &#x2F;home&#x2F;z&#x2F;.ssh&#x2F;id_rsa&quot; 10.10.1.10:&#x2F;home&#x2F;zyj &#x2F;cygdrive&#x2F;d&#x2F;Docker-bk</span><br></pre></td></tr></table></figure>
+
+<p>好好审视下需要备份的目录，不想要备份的子目录和文件可以列排除规则，上面的<code>--exclude-from /cygdrive/d/cwRsync_5.5.0_x86_Free/bin/exclude</code>就是把排除规则都放入了一个文件中。</p>
+<p>rsync 的选项和排除规则语法我们就不在本篇讨论了，有空再说咯。</p>
+<p>最终调试好的命令我们可以写入一个空白文件中，后缀改为 <code>.bat</code>。</p>
+<p>然后我们添加一个定时任务，具体操作如下：<br>1.我的电脑右键-&gt;管理-&gt;任务计划程序-&gt;创建任务<br><img src="/post_images/2020-06-06-cwrsync/create_task.jpg" alt=""><br>2.配置任务<br><img src="/post_images/2020-06-06-cwrsync/%E8%A7%A6%E5%8F%91%E5%99%A8.jpg" alt=""><br><img src="/post_images/2020-06-06-cwrsync/%E6%8C%87%E5%AE%9A%E8%BF%90%E8%A1%8C%E8%84%9A%E6%9C%AC.jpg" alt=""><br><img src="/post_images/2020-06-06-cwrsync/%E6%9D%A1%E4%BB%B6.jpg" alt=""></p>
+<p>搞定收工~</p>
 
       
       <!-- reward -->
@@ -141,13 +230,15 @@
     <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://yoursite.com/about/" alt="微信分享二维码">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://yoursite.com/2020/06/06/cwrsync/" alt="微信分享二维码">
     </div>
 </div>
 
 <div id="share-mask"></div>
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rsync/" rel="tag">rsync</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ssh/" rel="tag">ssh</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windows/" rel="tag">windows</a></li></ul>
+
 
     </footer>
 
@@ -155,6 +246,25 @@
 
   
   
+  <nav class="article-nav">
+    
+      <a href="/2020/06/17/change-linux-gcc-optimalize-level/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Linux 内核如何避免编译器优化
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2020/05/27/NAT-or-Bridged/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">Bridged or NAT 你也要网上冲浪吗?</div>
+      </a>
+    
+  </nav>
+
 
   
 
@@ -212,6 +322,8 @@
 
   
 
+  
+  
   
   
   
@@ -364,6 +476,24 @@
 
 
 
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: 'main',
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto'
+  });
+</script>
 
 
 

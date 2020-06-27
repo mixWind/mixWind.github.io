@@ -86,6 +86,618 @@
     
     
     
+    <article id="post-linux-shell-redirections" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/06/23/linux-shell-redirections/"
+    >bash：你真的了解这两个尖尖的东西吗</a> 
+</h2>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/06/23/linux-shell-redirections/" class="article-date">
+  <time datetime="2020-06-23T03:48:41.000Z" itemprop="datePublished">2020-06-23</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/shell/">shell</a>
+  </div>
+
+      
+      
+      
+    </div>
+    
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>先来看一个问题。<br>假设有一个文件<code>echo 111 &gt; test</code>，那么：</p>
+<ul>
+<li><code>cat &lt;test &gt;test</code> 的输出是什么？</li>
+</ul>
+<p>运行一下看看结果和你想的是否一样。如果你明确的知道为什么，那么就不必再看了。</p>
+      
+      <a class="article-more-link" href="/2020/06/23/linux-shell-redirections/">阅读更多...</a>
+      
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/shell/" rel="tag">shell</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+
+  
+  
+  
+
+  
+  
+  
+
+</article>
+    
+    <article id="post-linux-re" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/06/22/linux-re/"
+    >Linux Regular Expression</a> 
+</h2>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/06/22/linux-re/" class="article-date">
+  <time datetime="2020-06-22T03:52:19.000Z" itemprop="datePublished">2020-06-22</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/shell/">shell</a>
+  </div>
+
+      
+      
+      
+    </div>
+    
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <a id="more"></a>
+
+
+
+
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RE/" rel="tag">RE</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/" rel="tag">linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/shell/" rel="tag">shell</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+
+  
+  
+  
+
+  
+  
+  
+
+</article>
+    
+    <article id="post-change-linux-gcc-optimalize-level" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/06/17/change-linux-gcc-optimalize-level/"
+    >Linux 内核如何避免编译器优化</a> 
+</h2>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/06/17/change-linux-gcc-optimalize-level/" class="article-date">
+  <time datetime="2020-06-17T14:02:53.000Z" itemprop="datePublished">2020-06-17</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux-Kernel/">Linux Kernel</a>
+  </div>
+
+      
+      
+      
+    </div>
+    
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>最近调试内核使用 ftrace 的时候总是由于内核编译器的优化导致一些函数(主要是部分 static void 定义的函数)不能被追踪。去看 nm 和反汇编就会发现此时这些函数都已经不是一个独立的函数了。</p>
+<p>那么问题来了，为什么它们不配拥有姓名呢？</p>
+<p>会被优化的主要是这几类函数：</p>
+<ul>
+<li>static 并且只有一处调用</li>
+<li>一些小函数</li>
+</ul>
+      
+      <a class="article-more-link" href="/2020/06/17/change-linux-gcc-optimalize-level/">阅读更多...</a>
+      
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Gcc/" rel="tag">Gcc</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Makefile/" rel="tag">Makefile</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+
+  
+  
+  
+
+  
+  
+  
+
+</article>
+    
+    <article id="post-cwrsync" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/06/06/cwrsync/"
+    >cwrsync</a> 
+</h2>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/06/06/cwrsync/" class="article-date">
+  <time datetime="2020-06-06T14:55:30.000Z" itemprop="datePublished">2020-06-06</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+  </div>
+
+      
+      
+      
+    </div>
+    
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>最近在我的 windows 上配置了一下 rsync 远端备份我的服务器工作目录，毕竟没有备份的男人是没有安全感的。</p>
+<p>win 上的 rsync 软件我选择的是 <a href="https://itefix.net/cwrsync" target="_blank" rel="noopener">cwRsync</a>, 因为我的需求只要一个 rsync client 就够了所以选了他家的 free 版本。就是不带界面的免费版。正好反正使用场景是 win 开定时任务，命令行正合我心。</p>
+<p>cwRsync 在 win 上还是有不少坑，所以特此记录一下。当然本文的对象仅是 cwRsync，rsync 本身的一些坑就不在这里讨论了，但是我要吐槽一嘴 ￣へ￣ </p>
+      
+      <a class="article-more-link" href="/2020/06/06/cwrsync/">阅读更多...</a>
+      
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rsync/" rel="tag">rsync</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ssh/" rel="tag">ssh</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windows/" rel="tag">windows</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+
+  
+  
+  
+
+  
+  
+  
+
+</article>
+    
+    <article id="post-NAT-or-Bridged" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/05/27/NAT-or-Bridged/"
+    >Bridged or NAT 你也要网上冲浪吗?</a> 
+</h2>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/05/27/NAT-or-Bridged/" class="article-date">
+  <time datetime="2020-05-27T06:20:53.000Z" itemprop="datePublished">2020-05-27</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+  </div>
+
+      
+      
+      
+    </div>
+    
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>最近公司加了审计网关，每个人限定 MAC ，登录上网。旁边的小伙伴虚拟机就断网了，这可愁坏了小伙子，还能不能愉快的<del>划水</del>玩耍啦？</p>
+<p>俗话说的好，摸鱼乃人生大事。</p>
+<p>救救孩子！</p>
+<p>那我们这种老油条自然要伸出援助之手。</p>
+      
+      <a class="article-more-link" href="/2020/05/27/NAT-or-Bridged/">阅读更多...</a>
+      
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VM/" rel="tag">VM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/network/" rel="tag">network</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+
+  
+  
+  
+
+  
+  
+  
+
+</article>
+    
+    <article id="post-mobaxterm" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/04/27/mobaxterm/"
+    >MobaXterm 配置</a> 
+</h2>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/04/27/mobaxterm/" class="article-date">
+  <time datetime="2020-04-27T10:44:02.000Z" itemprop="datePublished">2020-04-27</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+  </div>
+
+      
+      
+      
+    </div>
+    
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>Win 下的 SSH 客户端我迁移到了 MobaXterm。</p>
+<p>本文主要安利下这个软件，顺便分享下我的一些配置。</p>
+      
+      <a class="article-more-link" href="/2020/04/27/mobaxterm/">阅读更多...</a>
+      
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tools/" rel="tag">tools</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windows/" rel="tag">windows</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+
+  
+  
+  
+
+  
+  
+  
+
+</article>
+    
+    <article id="post-windows-softwares" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/04/26/windows-softwares/"
+    >我的 Windos 必备软件分享</a> 
+</h2>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/04/26/windows-softwares/" class="article-date">
+  <time datetime="2020-04-26T09:53:46.000Z" itemprop="datePublished">2020-04-26</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+  </div>
+
+      
+      
+      
+    </div>
+    
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>最近把电脑玩坏了，修复引导也没救回来，目测是分区表弄坏了。索性系统全部重装。</p>
+<p>由于电脑比较老了，以前是 MBR 的双系统。这次乘机切换到 UEFI，当然整个盘全部格了，干干净净的好处是可以重新梳理下自己的东西，挺好的。以前看过一篇文章作者说每年会重装一次系统，突然有点理解这个行为了。</p>
+<p>由于整个重装了，而且手头也没有一份安装软件的 checklist，所以我能想起来的都是缺了就不习惯的。这篇单纯整理下 windows 下我必定会安装的软件，通用软件，工作和个人爱好强相关的略掉。</p>
+      
+      <a class="article-more-link" href="/2020/04/26/windows-softwares/">阅读更多...</a>
+      
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tools/" rel="tag">tools</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/windows/" rel="tag">windows</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+
+  
+  
+  
+
+  
+  
+  
+
+</article>
+    
+    <article id="post-git-log-amend-author" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h2 itemprop="name">
+  <a class="article-title" href="/2020/04/24/git-log-amend-author/"
+    >Git 修改历史提交的作者信息</a> 
+</h2>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/04/24/git-log-amend-author/" class="article-date">
+  <time datetime="2020-04-24T03:27:09.000Z" itemprop="datePublished">2020-04-24</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/git/">git</a>
+  </div>
+
+      
+      
+      
+    </div>
+    
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <p>对于最近一次的提交我们可以使用 <code>git commit --amend --author=&quot;name &lt;your@email&gt;&quot; --no-edit</code><br>来进行修改。</p>
+<p>那么对于更早之前的提交我们该怎么办呢？</p>
+      
+      <a class="article-more-link" href="/2020/04/24/git-log-amend-author/">阅读更多...</a>
+      
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git/" rel="tag">git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/git-rebase/" rel="tag">git rebase</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+
+  
+  
+  
+
+  
+  
+  
+
+</article>
+    
     <article id="post-2020-04-21-seascape" class="article article-type-post" itemscope
   itemprop="blogPost" data-scroll-reveal>
 
