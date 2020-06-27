@@ -51,7 +51,30 @@ A 中运行 `cat <test >test`，我们会发现 B 中出现巨量的打印，这
 ### 重定向的原理
 首先我们知道每个进程的0、1、2号文件描述符分别对应 stdin, stdout, stderr，也就是标准输入、标准输出、标准错误。
 
-进程每打开一个文件都对应一个文件描述符(fd, file descriptor)，
+进程每打开一个文件都对应一个文件描述符(fd, file descriptor)，所谓**重定向**就是打开一个文件然后将标准输入/输出的fd与之绑定。
+
+它的实现依赖的是系统调用dup2()来完成的，我们 `man` 一下 dup2
+```
+SYNOPSIS
+       #include <unistd.h>
+
+       int dup(int fildes);
+       int dup2(int fildes, int fildes2);
+
+DESCRIPTION
+       The  dup()  function  provides an alternative interface to the service provided by fcntl() using the F_DUPFD command. The
+       call dup(fildes) shall be equivalent to:
+
+           fcntl(fildes, F_DUPFD, 0);
+
+       The dup2() function shall cause the file descriptor fildes2 to refer to the same open file description as  the  file  de‐
+       scriptor fildes and to share any locks, and shall return fildes2.  If fildes2 is already a valid open file descriptor, it
+       shall be closed first, unless fildes is equal to fildes2 in which case dup2() shall return fildes2 without closing it. If
+       the  close  operation  fails to close fildes2, dup2() shall return −1 without changing the open file description to which
+       fildes2 refers. If fildes is not a valid file descriptor, dup2() shall return −1 and shall not close fildes2.  If fildes2
+       is less than 0 or greater than or equal to {OPEN_MAX}, dup2() shall return −1 with errno set to [EBADF].
+```
+我们结合上面 strace 抓到的流程，
 
 
 
