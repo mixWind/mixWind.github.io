@@ -75,7 +75,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">706</span>
+            <span class="post-count">1.4k</span>
         </span>
     </span>
 
@@ -84,7 +84,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-book-open-line"></i>
             <span class="post-meta-item-text"> 阅读时长≈</span>
-            <span class="post-count">3 分钟</span>
+            <span class="post-count">6 分钟</span>
         </span>
     </span>
 </div>
@@ -95,6 +95,8 @@
 
     
     
+    <div class="tocbot"></div>
+
 
 
 
@@ -129,34 +131,34 @@
 </ul>
 <p>接下来就开始我们的探案之旅吧。</p>
 <p>A 中运行 <code>cat &lt;test &gt;test</code>，我们会发现 B 中出现巨量的打印，这里我把关键部分摘出来：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[pid 12326] open(&quot;test&quot;, O_RDONLY|O_LARGEFILE) &#x3D; 3</span><br><span class="line">[pid 12326] dup2(3, 0)                  &#x3D; 0</span><br><span class="line">[pid 12326] close(3)                    &#x3D; 0</span><br><span class="line">[pid 12326] open(&quot;test&quot;, O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) &#x3D; 3</span><br><span class="line">[pid 12326] dup2(3, 1)                  &#x3D; 1</span><br><span class="line">[pid 12326] close(3)                    &#x3D; 0</span><br><span class="line">[pid 12326] execve(&quot;&#x2F;bin&#x2F;cat&quot;, [&quot;cat&quot;], [&#x2F;* 28 vars *&#x2F;]) &#x3D; 0</span><br><span class="line">&#96;&#96;&#96; </span><br><span class="line">这一部分是在做什么呢，我来解读一下。</span><br><span class="line"></span><br><span class="line">### 重定向的原理</span><br><span class="line">首先我们知道每个进程的0、1、2号文件描述符分别对应 stdin, stdout, stderr，也就是标准输入、标准输出、标准错误。</span><br><span class="line"></span><br><span class="line">进程每打开一个文件都对应一个文件描述符(fd, file descriptor)，所谓**重定向**就是打开一个文件然后将标准输入&#x2F;输出的fd与之绑定。</span><br><span class="line"></span><br><span class="line">它的实现依赖的是系统调用dup2()来完成的，我们 &#96;man&#96; 一下 dup2</span><br></pre></td></tr></table></figure>
-<p>SYNOPSIS<br>       #include &lt;unistd.h&gt;</p>
-<pre><code>int dup(int fildes);
-int dup2(int fildes, int fildes2);</code></pre><p>DESCRIPTION<br>       The  dup()  function  provides an alternative interface to the service provided by fcntl() using the F_DUPFD command. The<br>       call dup(fildes) shall be equivalent to:</p>
-<pre><code>    fcntl(fildes, F_DUPFD, 0);
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[pid 12326] open(&quot;test&quot;, O_RDONLY|O_LARGEFILE) &#x3D; 3</span><br><span class="line">[pid 12326] dup2(3, 0)                  &#x3D; 0</span><br><span class="line">[pid 12326] close(3)                    &#x3D; 0</span><br><span class="line">[pid 12326] open(&quot;test&quot;, O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0666) &#x3D; 3</span><br><span class="line">[pid 12326] dup2(3, 1)                  &#x3D; 1</span><br><span class="line">[pid 12326] close(3)                    &#x3D; 0</span><br><span class="line">[pid 12326] execve(&quot;&#x2F;bin&#x2F;cat&quot;, [&quot;cat&quot;], [&#x2F;* 28 vars *&#x2F;]) &#x3D; 0</span><br></pre></td></tr></table></figure>
 
-The dup2() function shall cause the file descriptor fildes2 to refer to the same open file description as  the  file  de‐
-scriptor fildes and to share any locks, and shall return fildes2.  If fildes2 is already a valid open file descriptor, it
-shall be closed first, unless fildes is equal to fildes2 in which case dup2() shall return fildes2 without closing it. If
-the  close  operation  fails to close fildes2, dup2() shall return −1 without changing the open file description to which
-fildes2 refers. If fildes is not a valid file descriptor, dup2() shall return −1 and shall not close fildes2.  If fildes2
-is less than 0 or greater than or equal to {OPEN_MAX}, dup2() shall return −1 with errno set to [EBADF].</code></pre><pre><code>我们结合上面 strace 抓到的流程，
-
-
-
-
-
-
-
-
-
-
-
-
-
-- `cat &lt;test &gt;&gt;test`呢？
-
-</code></pre>
+<p>这一部分是在做什么呢，我来解读一下。</p>
+<h3 id="重定向的原理"><a href="#重定向的原理" class="headerlink" title="重定向的原理"></a>重定向的原理</h3><p>首先我们知道每个进程的0、1、2号文件描述符分别对应 stdin, stdout, stderr，也就是标准输入、标准输出、标准错误。</p>
+<p>进程每打开一个文件都对应一个文件描述符(fd, file descriptor)，所谓<strong>重定向</strong>就是打开一个文件然后将标准输入/输出的fd与之绑定。</p>
+<p>它的实现依赖的是系统调用dup2()来完成的，我们 <code>man</code> 一下 dup2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">SYNOPSIS</span><br><span class="line">       #include &lt;unistd.h&gt;</span><br><span class="line"></span><br><span class="line">       int dup(int fildes);</span><br><span class="line">       int dup2(int fildes, int fildes2);</span><br><span class="line"></span><br><span class="line">DESCRIPTION</span><br><span class="line">       The  dup()  function  provides an alternative interface to the service provided by fcntl() using the F_DUPFD command. The</span><br><span class="line">       call dup(fildes) shall be equivalent to:</span><br><span class="line"></span><br><span class="line">           fcntl(fildes, F_DUPFD, 0);</span><br><span class="line"></span><br><span class="line">       The dup2() function shall cause the file descriptor fildes2 to refer to the same open file description as  the  file  de‐</span><br><span class="line">       scriptor fildes and to share any locks, and shall return fildes2.  If fildes2 is already a valid open file descriptor, it</span><br><span class="line">       shall be closed first, unless fildes is equal to fildes2 in which case dup2() shall return fildes2 without closing it. If</span><br><span class="line">       the  close  operation  fails to close fildes2, dup2() shall return −1 without changing the open file description to which</span><br><span class="line">       fildes2 refers. If fildes is not a valid file descriptor, dup2() shall return −1 and shall not close fildes2.  If fildes2</span><br><span class="line">       is less than 0 or greater than or equal to &#123;OPEN_MAX&#125;, dup2() shall return −1 with errno set to [EBADF].</span><br></pre></td></tr></table></figure>
+<p>我们结合上面 strace 抓到的流程，可见 bash 会在执行命令前先把重定向准备好。</p>
+<p><code>dup2(3,0)</code>对应的就是 <code>&lt;</code> 输入重定向。<code>dup2(3,1)</code> 则是对应 <code>&gt;</code> 输出重定向。而这里我们重点关注open的参数，在输出重定向对的open中：<br><code>O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE</code> 其中 O_TRUNC 就是清空文件的原因所在了。我们 <code>man 2 open</code> 可以搜到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">O_TRUNC</span><br><span class="line">       If the file already exists and is a regular file and the access mode allows writing (i.e., is O_RDWR or  O_WRONLY)</span><br><span class="line">       it  will  be  truncated  to length 0.  If the file is a FIFO or terminal device file, the O_TRUNC flag is ignored.</span><br><span class="line">       Otherwise, the effect of O_TRUNC is unspecified.</span><br></pre></td></tr></table></figure>
+<p>也就是说该选项将文件长度清0了，而根据我们 strace 看到的情况所有的重定向工作都在 cat 命令执行之前准备完成，所以当 cat 去读文件时文件已经被清空了。</p>
+<h3 id="cat-lt-test-gt-gt-test"><a href="#cat-lt-test-gt-gt-test" class="headerlink" title="cat &lt; test &gt;&gt;test"></a>cat &lt; test &gt;&gt;test</h3><p>那不妨再猜猜 <code>cat &lt;test &gt;&gt;test</code> 会怎么样？当然前提和上面一样 test 中有一行内容。给你一分钟想一想试一试。</p>
+<p>你猜对了吗，这条命令会无限套娃根本停不下来，CTRL+C 退出后你可以 <code>cat test</code> 感受一下。</p>
+<p>那到底发生了什么呢？</p>
+<p>首先我们要知道 cat 命令是可以从 stdin 和文件中获取输入的，你可以试试在命令行只运行<code>cat</code> 会发生什么，CTRL+D 退出哦。</p>
+<p>接下来照例我们 strace 抓一下，我依然截取部分。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[pid 12399] open(&quot;test&quot;, O_RDONLY|O_LARGEFILE) &#x3D; 3</span><br><span class="line">[pid 12399] dup2(3, 0)                  &#x3D; 0</span><br><span class="line">[pid 12399] close(3)                    &#x3D; 0</span><br><span class="line">[pid 12399] open(&quot;test&quot;, O_WRONLY|O_CREAT|O_APPEND|O_LARGEFILE, 0666) &#x3D; 3</span><br><span class="line">[pid 12399] dup2(3, 1)                  &#x3D; 1</span><br><span class="line">[pid 12399] close(3)                    &#x3D; 0</span><br><span class="line">[pid 12399] execve(&quot;&#x2F;bin&#x2F;cat&quot;, [&quot;cat&quot;], [&#x2F;* 28 vars *&#x2F;]) &#x3D; 0</span><br></pre></td></tr></table></figure>
+<p>与上面相比的话差异主要在于输出重定向时打开文件方式是 <code>O_APPEND</code> 而不是 <code>O_TRUNC</code>，所以文件没有被清空。</p>
+<p>此时文件内容作为 stdin 被 cat 读入然后写入文件尾部，cat 没有接到 EOF(CTRL+D)信号则会继续这个动作，套娃开始。</p>
+<p>那到底有没有办法能不请空文件又不套娃呢？</p>
+<h3 id="lt-gt-操作符"><a href="#lt-gt-操作符" class="headerlink" title="&lt;&gt; 操作符"></a>&lt;&gt; 操作符</h3><p>试试 <code>cat &lt;&gt;test</code>，哈哈终于正常了。</p>
+<p>我们看一下 <a href="https://www.gnu.org/software/bash/manual/html_node/Redirections.html" target="_blank" rel="noopener">GUN bash menual</a> 给出的解释：</p>
+<blockquote>
+<p>3.6.10 Opening File Descriptors for Reading and Writing<br>The redirection operator</p>
+<p>[n]&lt;&gt;word<br>causes the file whose name is the expansion of word to be opened for both reading and writing on file descriptor n, or on file descriptor 0 if n is not specified. If the file does not exist, it is created.</p>
+</blockquote>
+<p><code>&lt;&gt;</code> 是以读写的方式将文件冲重向到 0 中。这里就不再抓系统调用了，相信你也猜到了就是以读写方式打开文件，然后 dup2() 绑定 0。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3>
       
       <!-- reward -->
       
@@ -241,6 +243,15 @@ is less than 0 or greater than or equal to {OPEN_MAX}, dup2() shall return −1 
   
   
   <nav class="article-nav">
+    
+      <a href="/2020/09/09/custom-gdb/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            定制你的GDB
+          
+        </div>
+      </a>
     
     
       <a href="/2020/06/22/linux-re/" class="article-nav-link">
