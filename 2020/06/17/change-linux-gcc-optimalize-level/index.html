@@ -75,7 +75,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">631</span>
+            <span class="post-count">1.1k</span>
         </span>
     </span>
 
@@ -84,7 +84,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-book-open-line"></i>
             <span class="post-meta-item-text"> 阅读时长≈</span>
-            <span class="post-count">2 分钟</span>
+            <span class="post-count">4 分钟</span>
         </span>
     </span>
 </div>
@@ -95,6 +95,8 @@
 
     
     
+    <div class="tocbot"></div>
+
 
 
 
@@ -116,7 +118,7 @@
 </ul>
 <a id="more"></a>
 
-<p>首先我们先看看 GCC 都有哪些优化等级。下表出自<a href="https://www.rapidtables.com/code/linux/gcc/gcc-o.html" target="_blank" rel="noopener">gcc -o / -O option flags</a><br><img src="/post_images/post_images/2020-06-17-change-linux-gcc-optimalize-level/gcc-opt-level.jpg" alt="gcc opt levels"></p>
+<h2 id="GCC-优化等级"><a href="#GCC-优化等级" class="headerlink" title="GCC 优化等级"></a>GCC 优化等级</h2><p>首先我们先看看 GCC 都有哪些优化等级。下表出自<a href="https://www.rapidtables.com/code/linux/gcc/gcc-o.html" target="_blank" rel="noopener">gcc -o / -O option flags</a><br><img src="/post_images/2020-06-17-change-linux-gcc-optimalize-level/gcc-opt-level.jpg" alt="gcc opt levels"></p>
 <p>简单来说</p>
 <ul>
 <li>-O0 优化编译时间</li>
@@ -127,10 +129,38 @@
 </ul>
 <p>同时我们也注意到优化等级越高编译耗时越长，执行效率的提升代价是内存空间的消耗。</p>
 <p>回到我们的正题优化很重要的一部分就是把函数转为内联(inline)。</p>
-<p>根据<a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html" target="_blank" rel="noopener">这份gcc文档</a>我们可以看看每个 level 都做了哪些事情。本文我们主要关注<br>inline 相关的一些优化，这部分内容我摘录在下面方便你理解，更多的选项感兴趣可自行查看。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">-O1 级别有一项：</span><br><span class="line">-finline-functions-called-once</span><br><span class="line"></span><br><span class="line">-O2 -O3 -Os 都有两项：</span><br><span class="line">-finline-functions </span><br><span class="line">-finline-small-functions</span><br><span class="line"></span><br><span class="line">具体解释如下：</span><br><span class="line">-finline-functions-called-once</span><br><span class="line">Consider all static functions called once for inlining into their caller even if they are not marked inline. If a call to a given function is integrated, then the function is not output as assembler code in its own right.</span><br><span class="line"></span><br><span class="line">Enabled at levels -O1, -O2, -O3 and -Os, but not -Og.</span><br><span class="line"></span><br><span class="line">-finline-functions</span><br><span class="line">Consider all functions for inlining, even if they are not declared inline. The compiler heuristically decides which functions are worth integrating in this way.</span><br><span class="line"></span><br><span class="line">If all calls to a given function are integrated, and the function is declared static, then the function is normally not output as assembler code in its own right.</span><br><span class="line"></span><br><span class="line">Enabled at levels -O2, -O3, -Os. Also enabled by -fprofile-use and -fauto-profile.</span><br><span class="line"></span><br><span class="line">-finline-small-functions</span><br><span class="line">Integrate functions into their callers when their body is smaller than expected function call code (so overall size of program gets smaller). The compiler heuristically decides which functions are simple enough to be worth integrating in this way. This inlining applies to all functions, even those not declared inline.</span><br><span class="line"></span><br><span class="line">Enabled at levels -O2, -O3, -Os.</span><br></pre></td></tr></table></figure>
-<p>所以困扰我的“static 函数被优化的问题”其实是这一条 <strong>-finline-functions-called-once</strong>, 只要定义为 static 且只有一处调用的函数会被内联，优化等级 -O1 起就有此项了。</p>
-<p>而内核的优化等级主要是 -O2 和 -Os，最新的内核还会有 -O3。因此呢</p>
+<p>根据<a href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html" target="_blank" rel="noopener">这份gcc文档</a>我们可以看看每个 level 都做了哪些事情。本文我们主要关注 inline 相关的一些优化，这部分内容我摘录在下面方便你理解，更多的选项感兴趣可自行查看。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-O1 级别有一项：</span><br><span class="line">-finline-functions-called-once</span><br><span class="line"></span><br><span class="line">-O2 -O3 -Os 都有两项：</span><br><span class="line">-finline-functions </span><br><span class="line">-finline-small-functions</span><br></pre></td></tr></table></figure>
+<p>具体解释如下：</p>
+<blockquote>
+<p><big>-finline-functions-called-once</big><br>Consider all static functions called once for inlining into their caller even if they are not marked inline. If a call to a given function is integrated, then the function is not output as assembler code in its own right.</p>
+<p>Enabled at levels -O1, -O2, -O3 and -Os, but not -Og.</p>
+<p><big>-finline-functions</big><br>Consider all functions for inlining, even if they are not declared inline. The compiler heuristically decides which functions are worth integrating in this way.</p>
+<p>If all calls to a given function are integrated, and the function is declared static, then the function is normally not output as assembler code in its own right.</p>
+<p>Enabled at levels -O2, -O3, -Os. Also enabled by -fprofile-use and -fauto-profile.</p>
+<p><big>-finline-small-functions</big><br>Integrate functions into their callers when their body is smaller than expected function call code (so overall size of program gets smaller). The compiler heuristically decides which functions are simple enough to be worth integrating in this way. This inlining applies to all functions, even those not declared inline.</p>
+<p>Enabled at levels -O2, -O3, -Os. </p>
+</blockquote>
+<p>所以困扰我的“static 函数被优化的问题”其实是这一条 <strong>-finline-functions-called-once</strong>, 只要定义为 static 且只有一处调用的函数会被内联，优化等级 -O1 起就有此项了。此外一些所谓的小函数在 -O2 -O3 -Os 也会被优化掉。</p>
+<p>而内核的优化等级主要是 -O2 和 -Os，最新的内核还会有 -O3。所以要达到我们的目的需要把优化等级降到 -O0 或者 -Og。</p>
+<hr>
+<h2 id="去优化"><a href="#去优化" class="headerlink" title="去优化"></a>去优化</h2><p>原理我们现在清楚了，那如何去避免这些优化呢？</p>
+<h3 id="noinline"><a href="#noinline" class="headerlink" title="noinline"></a>noinline</h3><p>最简单的，如果我们只需要少数几个函数不被优化，那就在目标函数前声明 <code>noinline</code> 就好了。</p>
+<p>那么更大范围呢，比如一个模块。最粗暴的我们可以 sed + 正则 扫过去。但是这样有可能覆盖不全或者错误添加，毕竟正则嘛，其次改动太多。或许你想起来了可以在内核的顶层目录修改优化等级，但是很遗憾全局范围的 -O0 是编不过去的。</p>
+<h3 id="CFLAGS-REMOVE"><a href="#CFLAGS-REMOVE" class="headerlink" title="CFLAGS_REMOVE_"></a>CFLAGS_REMOVE_</h3><p>内核中提供了方法。</p>
+<p>对于单个文件，可在 Makefile 中定义 CFLAGS_REMOVE_xxx.o</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 比如目标文件为 target.c 则在对应的 Makefile 中添加</span><br><span class="line">CFLAGS_REMOVE_target.o &#x3D; -O2</span><br></pre></td></tr></table></figure>
+<p>我们分析一下它的原理。grep 搜索这个变量前缀可以发现，他是被用在 scripts/Makefile.lib</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ag CFLAGS_REMOVE  scripts&#x2F;Makefile.lib</span><br><span class="line">106:_c_flags       &#x3D; $(filter-out $(CFLAGS_REMOVE_$(basetarget).o), $(orig_c_flags))</span><br></pre></td></tr></table></figure>
+<p>分析这个路径 scripts/Makefile.lib 可以猜到这是内核编译的公共 makefile。<code>filter-out</code> 是 make 的内置函数，作用就是将 <code>CFLAGS_REMOVE_$(basetarget).o</code> 中的字符串从 <code>orig_c_flags</code> 中剔除。我们再看一下这个 orig_c_flags。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ag -A2 &quot;orig_c_flags.*&#x3D;&quot;  scripts&#x2F;Makefile.lib</span><br><span class="line">104:orig_c_flags   &#x3D; $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(KBUILD_SUBDIR_CCFLAGS) \</span><br><span class="line">105-                 $(ccflags-y) $(CFLAGS_$(basetarget).o)</span><br><span class="line">106-_c_flags       &#x3D; $(filter-out $(CFLAGS_REMOVE_$(basetarget).o), $(orig_c_flags))</span><br></pre></td></tr></table></figure>
+<p>看到这里基本上我们大概知道了就是先加载总的 cflags 配置，根据 CFLAGS_REMOVE_ 来裁剪某个文件具体的配置。当然你还可以搜一下 <code>_c_flags</code>，这里就不展开了。</p>
+<h3 id="KBUILD-CFLAGS"><a href="#KBUILD-CFLAGS" class="headerlink" title="KBUILD_CFLAGS"></a>KBUILD_CFLAGS</h3><p>KBUILD_CFLAGS 用来进行目录级的修改。至于原理经过我们上面的分析你应该也明白了，通过操作 KBUILD_CFLAGS 来影响 orig_c_flags 从而作用于整个目录。</p>
+<p>用法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">KBUILD_CFLAGS :&#x3D; $(filter-out -O2, $(KBUILD_CFLAGS))</span><br></pre></td></tr></table></figure>
+
+
+
 
       
       <!-- reward -->
