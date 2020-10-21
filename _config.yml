@@ -95,6 +95,46 @@ ignore:
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: ayer
+theme_config:
+  # 侧边栏菜单
+  menu:
+    主页: /
+    归档: /archives
+    分类: /categories
+    标签: /tags
+    关于我: /about
+  
+  # 站点次标题和打字动效
+  # https://github.com/mattboldt/typed.js
+  subtitle:
+    enable: false # 是否开启动效
+    text: TIME IS CHANGE # 滚动播放，如果不需要可以留空
+    text2:
+    text3:
+  
+  # 打赏
+  # 打赏type设定：0-关闭打赏； 1-文章对应的md文件里有reward:true属性，才有打赏； 2-所有文章均有打赏
+  reward_type: 2
+  # 打赏wording
+  reward_wording: "请我喝杯咖啡吧~"
+  # 支付宝二维码图片地址，跟你设置logo的方式一样。比如：/images/alipay.jpg
+  alipay: /tks/alipay.jpg
+  # 微信二维码图片地址
+  weixin: /tks/wechat.jpg
+  
+  # 1、Valine[一款快速、简洁且高效的无后端评论系统](https://github.com/xCss/Valine)
+  # 启用Valine必须先创建leancloud应用， 获取 id|key 填入即可
+  leancloud:
+    enable: true
+    app_id: bvuA6HBJozJGUOpgxsFh2bIL-MdYXbMMI
+    app_key: SXQ7K3p1k6CqkUVxXLUHA8H5
+  # Valine配置
+  valine:
+    enable: true # 是否启用
+    avatar: monsterid # 头像样式(https://valine.js.org/avatar.html)
+    placeholder: 给我的文章加点评论吧~ # placeholder
+  
+
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html

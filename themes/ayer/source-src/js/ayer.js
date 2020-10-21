@@ -30,7 +30,7 @@
       $searchWrap.removeClass('on');
     }
   });
-  
+
   // 建议在移动端不初始化，其实 /search.xml 文件还挺大的，
   if ($('.local-search').size()) {
     $.getScript('/js/search.js', function () {
@@ -92,7 +92,7 @@
     const scrollElem = $('#totop');
 
     // Scroll to top speed
-    const scrollSpeed = 1600;
+    const scrollSpeed = 1000;
 
     // Show and hide the scroll to top link based on scroll position
     scrollElem.hide();
@@ -171,6 +171,7 @@
     ayerNameStyle,
     ayerNameStr
   );
+  document.write('<script type="text/javascript"  src="https://js.users.51.la/20544303.js"></script>');
 })(jQuery);
 
 
