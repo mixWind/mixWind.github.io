@@ -3,13 +3,17 @@ title: "A block layer introduction part 1: the bio layer (译)"
 date: 2021-02-26 17:45:45
 updte: 2021-02-26 17:45:45
 categories:
-- kernel
+- Linux Kernel
+- 存储
 tags:
-- linux
+- linux kernel
 - block layer
 ---
 
 Neil 是 linux 内核 raid 模块最初的维护者，他卸任后承诺会写一些文章来讲解相关的内容。
+
+我准备把这些文章翻译一下。这是第一篇。
+
 <!--more-->
 
 https://lwn.net/Articles/736534/

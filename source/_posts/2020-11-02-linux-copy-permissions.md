@@ -1,5 +1,5 @@
 ---
-title: linux-copy-permissions
+title: Linux umask
 date: 2020-11-02 16:52:52
 updte: 2020-11-02 16:52:52
 categories:
